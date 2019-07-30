@@ -231,7 +231,7 @@ print(y_train[0:500])
      1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1]
 
 
-**Jeremy's note**: Obviously this data is going to need to be shuffled.
+**Note**: Obviously this data is going to need to be shuffled.
 
 
 ```python
