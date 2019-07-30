@@ -296,9 +296,8 @@ _Describe how you preprocessed the data. Why did you choose that technique?_
 **Answer:** 
 
 My dataset preprocessing consisted of:
- 1. Converting to grayscale - This worked well for Sermanet and LeCun as described in their traffic sign classification article. It also helps to reduce training time, which was nice when a GPU wasn't available.
- 2. Normalizing the data to the range (-1,1) - This was done using the line of code X_train_normalized = (X_train - 128)/128. The resulting dataset mean wasn't exactly zero, but it was reduced from around 82 to roughly -0.35. I chose to do this mostly because it was suggested in the lessons and it was fairly easy to do. How it helps is a bit nebulous to me, but [this site](http://stats.stackexchange.com/questions/185853/why-do-we-need-to-normalize-the-images-before-we-put-them-into-cnn) has an explanation, the gist of which is that having a wider distribution in the data would make it more difficult to train using a singlar learning rate. Different features could encompass far different ranges and a single learning rate might make some weights diverge.
-
+ 1. Converting to grayscale.
+ 2. Normalizing the data to the range (-1,1).
 
 ```python
 ### Generate data additional data (OPTIONAL!)
@@ -306,7 +305,7 @@ My dataset preprocessing consisted of:
 ### Feel free to use as many code cells as needed.
 ```
 
-**Jeremy's note**: Four functions for augmenting the dataset: random_translate, random_scale, random_warp, and random_brightness
+**Note**: Four functions for augmenting the dataset: random_translate, random_scale, random_warp, and random_brightness
 
 
 ```python
@@ -668,9 +667,7 @@ _Describe how you set up the training, validation and testing data for your mode
 
 **Answer:** 
 
-Rumor has it that data augmentation is the single best method to increase accuracy of the model. Because several classes in the data have far fewer samples than others the model will tend to be biased toward those classes with more samples. I implemented augmentation by creating copies of each sample for a class (sometimes several copies) in order to boost the number of samples for the class to 800 (if that class didn't already have at least 800 samples). Each copy is fed into a "jitter" pipeline that randomly translates, scales, warps, and brightness adjusts the image. I sought to keep the parameters for these transformations relatively conservative and keep the sign in the image recognizable. This was by far the most laborious part of the project, and it takes quite some time to run the code.
-
-I also used the SciKit Learn train_test_split function to create a validation set out of the training set. I used 20% of the testing set to create the validation set.
+Because several classes in the data had fewer samples than others the model would have tended to be biased toward those classes with more samples. I implemented augmentation by creating copies of each sample for a class (sometimes several copies) in order to boost the number of samples for the class to 800 (if that class didn't already have at least 800 samples). Each copy is fed into a "jitter" pipeline that randomly translates, scales, warps, and brightness adjusts the image. I sought to keep the parameters for these transformations relatively conservative and keep the sign in the image recognizable. This was by far the most laborious part of the project, and it takes quite some time to run the code.
 
 
 ```python
@@ -693,7 +690,7 @@ print('done')
 
 ## Original LeNet Model Architecture
 
-![LeNet](https://github.com/jeremy-shannon/CarND-LeNet-Lab/raw/cd4ba97906176e6020a4b3c084b7518ef3dded5e/lenet.png)
+![LeNet](images/lenet.png)
 
 
 ```python
@@ -1151,68 +1148,6 @@ with tf.Session() as sess:
     Model saved
 
 
-# Log
-- 2016/01/03 - 96.5% 
-    - preprocessing: grayscale, normalization
-    - model: original LeNet, batch size: 128, epochs: 10, rate: 0.001, mu: 0, sigma: 0.1
-- 2016/01/04 - 97.5%
-    - model: modified LeNet
-        - additional convolution layer (no max pool) flattened and concatenated with flattened layer 2 output
-        - i.e. 5x5x16 branched off to 5x5 convolution (output of 1x1x400), each flattened (to 400) and concatenated (800)
-    - all other layers the same, except first fully connected to accommodate change from 400 to 800
-    - all other hyperparameters and preprocessing the same
-- 2016/01/04 - 98.3%
-    - model: further modified LeNet
-        - removed last two fully connected layers so that the lone fully connected layer acts as classifier (800 -> 43)
-    - all other hyperparameters and preprocessing the same
-- 2016/01/04 - 97.5%
-    - reduced learning rate 50% (to 0.0005) after observing some bounce in accuracy across epochs
-- 2016/01/05 - 98.6%
-    - changed learning rate to 0.0008, nothing more
-- 2016/01/08 - after a few days of implementing data augmentation (and one day off in there) I'm having trouble improving or even getting close to my previous validation accuracy. I first tried augmenting all labels up to the point of 1500 samples (which takes a very long time, even on GPU - now working), but it seems to have crippled my validation accuracy to ~70% (where-about it starts and ends across all epochs). Obviously I'm doing something wrong in my data augmentation, so that's where I am right now.
-- 2016/01/08 - squashed the bug in the augmentation code and got accuracy back to high 90's, then implemented dropout and (after some difficulty) achieved similar accuracy (~97%)
-- 2016/01/08 - 98.3%
-    - after the changes above, adjusted the keep_prob from 0.5 to 0.75
-    - still LeNet2, batch size: 128, epochs: 10, rate: 0.001, mu: 0, sigma: 0.1
-- 2016/01/08 - 92.8%
-    - model: LeNet2, batch size: 256, epochs: 15, rate: 0.00075, mu: 0, sigma: 0.3
-- 2016/01/08 - 98.2%
-    - model: LeNet2, batch size: 256, epochs: 15, rate: 0.00075, mu: 0, sigma: 0.1
-- 2016/01/08 - 97.7%
-    - model: LeNet2, batch size: 256, epochs: 15, rate: 0.00075, mu: 0, sigma: 0.05
-- 2016/01/08 - 93.4%
-    - model: LeNet2, batch size: 512, epochs: 15, rate: 0.00075, mu: 0, sigma: 0.1
-- 2016/01/08 - 95.3%
-    - model: LeNet2, batch size: 512, epochs: 25, rate: 0.00075, mu: 0, sigma: 0.1
-- 2016/01/08 - 97.7%
-    - model: LeNet2, batch size: 64, epochs: 25, rate: 0.00075, mu: 0, sigma: 0.1
-- 2016/01/08 - 97.9%
-    - model: LeNet2, batch size: 64, epochs: 25, rate: 0.001, mu: 0, sigma: 0.1
-- 2016/01/08 - 98.2%
-    - model: LeNet2, batch size: 100, epochs: 25, rate: 0.001, mu: 0, sigma: 0.1
-- 2016/01/08 - 98.5%
-    - model: LeNet2, batch size: 100, epochs: 100, rate: 0.001, mu: 0, sigma: 0.1
-    - leveled off around epoch 50
-- 2016/01/08 - 98.8%
-    - model: LeNet2, batch size: 100, epochs: 100, rate: 0.0009, mu: 0, sigma: 0.1
-- 2016/01/08 - 98.7%
-    - model: LeNet2, batch size: 100, epochs: 100, rate: 0.0008, mu: 0, sigma: 0.1
-- 2016/01/08 - 98.7%
-    - model: LeNet2, batch size: 100, epochs: 100, rate: 0.0005, mu: 0, sigma: 0.1
-- 2016/01/08 - 97.7%
-    - model: LeNet2, batch size: 100, epochs: 100, rate: 0.0001, mu: 0, sigma: 0.1
-- 2016/01/08 - 99.0%
-    - model: LeNet2, batch size: 100, epochs: 100, rate: 0.0009, mu: 0, sigma: 0.1, keep_prob: 0.6
-- 2016/01/08 - 99.0%
-    - model: LeNet2, batch size: 100, epochs: 100, rate: 0.0009, mu: 0, sigma: 0.1, keep_prob: 0.55
-- 2016/01/08 - 99.0%
-    - model: LeNet2, batch size: 100, epochs: 100, rate: 0.0009, mu: 0, sigma: 0.1, keep_prob: 0.5
-- 2016/01/08 - 98.9%
-    - model: LeNet2, batch size: 100, epochs: 60, rate: 0.0009, mu: 0, sigma: 0.1, keep_prob: 0.5
-- 2016/01/08 - 99.1%
-    - model: LeNet2, batch size: 100, epochs: 60, rate: 0.0009, mu: 0, sigma: 0.1, keep_prob: 0.5
-
-
 ```python
 # Now (drumroll) evaluate the accuracy of the model on the test dataset
 
@@ -1252,6 +1187,67 @@ _What approach did you take in coming up with a solution to this problem? It may
 **Answer:**
 
 My approach was a little of both. Like I mentioned earlier, I started with pre-defined architectures (LeNet and the Sermanet/LeCun model) and almost all of the tweaking from there was a process of trial and error. Thankfully, my guesses were educated thanks to working through the Tensorflow and LeNet labs. I had also worked through the exercises for the Udacity Deep Learning course, and it was at that time that I discovered that trial and error is pretty much a losing strategy when it comes to building the neural net. I kept a log of my experiments, above, that shows how I played with hyperparameters to get a good level of validation accuracy.
+
+
+# Log
+- 2019/07/25 - 96.5% 
+    - preprocessing: grayscale, normalization
+    - model: original LeNet, batch size: 128, epochs: 10, rate: 0.001, mu: 0, sigma: 0.1
+- 2019/07/26 - 97.5%
+    - model: modified LeNet
+        - additional convolution layer (no max pool) flattened and concatenated with flattened layer 2 output
+        - i.e. 5x5x16 branched off to 5x5 convolution (output of 1x1x400), each flattened (to 400) and concatenated (800)
+    - all other layers the same, except first fully connected to accommodate change from 400 to 800
+    - all other hyperparameters and preprocessing the same
+- 2019/07/27 - 98.3%
+    - model: further modified LeNet
+        - removed last two fully connected layers so that the lone fully connected layer acts as classifier (800 -> 43)
+    - all other hyperparameters and preprocessing the same
+- 2019/07/27 - 97.5%
+    - reduced learning rate 50% (to 0.0005) after observing some bounce in accuracy across epochs
+- 2019/07/27 - 98.6%
+    - changed learning rate to 0.0008, nothing more
+- 2019/07/30 - after a few days of implementing data augmentation (and one day off in there) I'm having trouble improving or even getting close to my previous validation accuracy. I first tried augmenting all labels up to the point of 1500 samples (which takes a very long time, even on GPU - now working), but it seems to have crippled my validation accuracy to ~70% (where-about it starts and ends across all epochs). Obviously I'm doing something wrong in my data augmentation, so that's where I am right now.
+- 2019/07/30 - squashed the bug in the augmentation code and got accuracy back to high 90's, then implemented dropout and (after some difficulty) achieved similar accuracy (~97%)
+- 2019/07/30 - 98.3%
+    - after the changes above, adjusted the keep_prob from 0.5 to 0.75
+    - still LeNet2, batch size: 128, epochs: 10, rate: 0.001, mu: 0, sigma: 0.1
+- 2019/07/30 - 98.2%
+    - model: LeNet2, batch size: 256, epochs: 15, rate: 0.00075, mu: 0, sigma: 0.1
+- 2019/07/30 - 97.7%
+    - model: LeNet2, batch size: 256, epochs: 15, rate: 0.00075, mu: 0, sigma: 0.05
+- 2019/07/30 - 93.4%
+    - model: LeNet2, batch size: 512, epochs: 15, rate: 0.00075, mu: 0, sigma: 0.1
+- 2019/07/30 - 95.3%
+    - model: LeNet2, batch size: 512, epochs: 25, rate: 0.00075, mu: 0, sigma: 0.1
+- 2019/07/30 - 97.7%
+    - model: LeNet2, batch size: 64, epochs: 25, rate: 0.00075, mu: 0, sigma: 0.1
+- 2019/07/30 - 97.9%
+    - model: LeNet2, batch size: 64, epochs: 25, rate: 0.001, mu: 0, sigma: 0.1
+- 2019/07/30 - 98.2%
+    - model: LeNet2, batch size: 100, epochs: 25, rate: 0.001, mu: 0, sigma: 0.1
+- 2019/07/30 - 98.5%
+    - model: LeNet2, batch size: 100, epochs: 100, rate: 0.001, mu: 0, sigma: 0.1
+    - leveled off around epoch 50
+- 2019/07/30 - 98.8%
+    - model: LeNet2, batch size: 100, epochs: 100, rate: 0.0009, mu: 0, sigma: 0.1
+- 2019/07/30 - 98.7%
+    - model: LeNet2, batch size: 100, epochs: 100, rate: 0.0008, mu: 0, sigma: 0.1
+- 2019/07/30 - 98.7%
+    - model: LeNet2, batch size: 100, epochs: 100, rate: 0.0005, mu: 0, sigma: 0.1
+- 2019/07/30 - 97.7%
+    - model: LeNet2, batch size: 100, epochs: 100, rate: 0.0001, mu: 0, sigma: 0.1
+- 2019/07/30 - 99.0%
+    - model: LeNet2, batch size: 100, epochs: 100, rate: 0.0009, mu: 0, sigma: 0.1, keep_prob: 0.6
+- 2019/07/30 - 99.0%
+    - model: LeNet2, batch size: 100, epochs: 100, rate: 0.0009, mu: 0, sigma: 0.1, keep_prob: 0.55
+- 2019/07/30 - 99.0%
+    - model: LeNet2, batch size: 100, epochs: 100, rate: 0.0009, mu: 0, sigma: 0.1, keep_prob: 0.5
+- 2019/07/30 - 98.9%
+    - model: LeNet2, batch size: 100, epochs: 60, rate: 0.0009, mu: 0, sigma: 0.1, keep_prob: 0.5
+- 2019/07/30 - 99.1%
+    - model: LeNet2, batch size: 100, epochs: 60, rate: 0.0009, mu: 0, sigma: 0.1, keep_prob: 0.5
+
 
 ---
 
@@ -1426,30 +1422,4 @@ Looking just at the first row we get `[ 0.34763842,  0.24879643,  0.12789202]`, 
 
 **Answer:**
 
-The model is somehow ONE HUNDRED PERCENT certain of 7 out of 8 of the signs I gave it (and it's correct, as you can see - I pulled an image for each of the top 3 predicted classes from the original dataset for comparison). And even on the last image, it's 95% certain. Is that even possible?
-
-> **Note**: Once you have completed all of the code implementations and successfully answered each question above, you may finalize your work by exporting the iPython Notebook as an HTML document. You can do this by using the menu above and navigating to  \n",
-    "**File -> Download as -> HTML (.html)**. Include the finished document along with this notebook as your submission.
-
-
-```python
-aug_train = {'features': X_train_normalized,
-             'labels': y_train}
-aug_val = {'features': X_validation,
-             'labels': y_validation}
-aug_test = {'features': X_test_normalized,
-             'labels': y_test}
-pickle.dump(aug_train, open( "./my-augmented-data/aug_train.p", "wb" ) )
-pickle.dump(aug_val, open( "./my-augmented-data/aug_val.p", "wb" ) )
-pickle.dump(aug_test, open( "./my-augmented-data/aug_test.p", "wb" ) )
-
-print('done')
-```
-
-    done
-
-
-
-```python
-
-```
+The model is somehow \~100% certain of 7 out of 8 of the signs I gave it (and it's correct, as you can see - I pulled an image for each of the top 3 predicted classes from the original dataset for comparison). And even on the last image, it's \~95% certain.
